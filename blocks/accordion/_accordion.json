@@ -22,6 +22,7 @@
       "fields": [
         {
           "component": "multiselect",
+          "valueType": "string",
           "name": "style",
           "label": "Style",
           "options": [

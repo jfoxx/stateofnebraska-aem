@@ -28,6 +28,7 @@
         },
         {
           "component": "select",
+          "valueType": "string",
           "name": "title-heading-level",
           "label": "Title Heading Level",
           "options": [
