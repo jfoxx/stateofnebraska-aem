@@ -395,12 +395,12 @@ function decorateIconList( element ) {
 				// move everything after the br to a new paragraph
 				if ( child.tagName && [ 'H2', 'H3', 'H4' ].includes( child.tagName.toUpperCase() ) ) {
 					const after = document.createElement( 'p' );
-					let found = false;
+					let foundBR = false;
 					child.childNodes.forEach( c => {
-						if ( found ) {
+						if ( foundBR ) {
 							after.appendChild( c );
-						} else if ( c.tagName.toUpperCase() === 'BR' ) {
-							found = true;
+						} else if ( c.tagName?.toUpperCase() === 'BR' ) {
+							foundBR = true;
 						}
 					} );
 
@@ -472,6 +472,8 @@ function decorateSections( main ) {
 		// Process section metadata
 		const sectionMeta = section.querySelector( 'div.section-metadata' );
 		const hasIconButtonGrid = section.querySelector( '.icon-button-grid' ) !== null;
+		const hasFilledCards = section.querySelector( '.info-card-grid.filled, .info-card-grid .icon, .linked-card-grid.filled' ) !== null;
+		const backgroundOptions = { 'light': false, 'dark': false, 'theme': false };
 
 		if ( sectionMeta ) {
 			const meta = readBlockConfig( sectionMeta );
@@ -484,30 +486,33 @@ function decorateSections( main ) {
 						.map( ( style ) => toClassName( style.trim() ) );
 					styles.forEach( ( style ) => section.classList.add( style ) );
 				} else if ( key === 'layout' ) {
-					const [col1, col2] = meta[key].split( '/' ).map( Number );
-					const isValidLayout = col1 > 0 && col2 > 0 && col1 + col2 === 12;
+					const cols = meta[key].split( '/' ).map( ( n ) => Number( n.trim() ) );
+					const sum = cols.reduce( ( a, b ) => a + b, 0 );
+					const isValidLayout = cols.length >= 2
+						&& cols.every( ( n ) => Number.isInteger( n ) && n > 0 )
+						&& sum === 12;
 
 					if ( isValidLayout ) {
-						section.dataset.layout = col1 + '/' + col2;
+						section.dataset.layout = cols.join( '/' );
 						section.classList.add( 'grid-row', 'grid-gap' );
 
 						const divs = Array.from( section.children ).filter(
 							el => !el.querySelector( '.section-metadata' )
 						);
 
-						divs.forEach( async ( div, i ) => {
-							const colSize = i % 2 === 0 ? col1 : col2;
+						divs.forEach( ( div, i ) => {
+							const colSize = cols[i % cols.length];
 							div.classList.add( `desktop:grid-col-${colSize}` );
 						} );
 					}
 				}
 				else if ( key === 'background' ) {
 					const value = String( meta[key] ?? '' ).trim().toLowerCase();
-					const backgroundOptions = [ 'light', 'dark', 'theme' ];
 
-					if( backgroundOptions.includes( value ) ) {
+					if( Object.keys( backgroundOptions ).includes( value ) ) {
 						section.classList.add( 'section-background', 'section-background--' + value );
-
+						backgroundOptions[value] = true;
+						
 						if( isFullWidthTemplate ) {
 							// Apply full-width background treatment
 							section.classList.add( 'section-background--full' );
@@ -546,11 +551,17 @@ function decorateSections( main ) {
 			} );
 
 			// Default to dark if this component is within and background isn't specified
-			if( hasIconButtonGrid && !meta['background'] ) {
+			if( hasIconButtonGrid && Object.keys( backgroundOptions ).filter( key => backgroundOptions[key] ).length ) {
 				section.classList.add( 'section-background', 'section-background--dark' );
 				if( isFullWidthTemplate ) {
 					section.classList.add( 'section-background--full' );
 				}
+			} else if( hasFilledCards && ( backgroundOptions.dark || backgroundOptions.theme ) ) {
+				// If the section has filled cards, force a light version
+				section.classList.remove( 'section-background--dark' );
+				backgroundOptions.dark = false;
+				section.classList.add( 'section-background--light' );
+				backgroundOptions.light = true;
 			}
 
 			sectionMeta.parentElement.remove(); // itself + wrapping div
