@@ -3,6 +3,8 @@
     {
       "title": "Section",
       "id": "section",
+      "model": "section",
+      "filter": "section",
       "plugins": {
         "xwalk": {
           "page": {
@@ -11,6 +13,9 @@
               "model": "section"
             }
           }
+        },
+        "da": {
+          "unsafeHTML": "<div></div>"
         }
       }
     }

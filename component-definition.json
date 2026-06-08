@@ -7,18 +7,24 @@
         {
           "title": "Text",
           "id": "text",
+          "model": "text",
           "plugins": {
             "xwalk": {
               "page": {
                 "resourceType": "core/franklin/components/text/v1/text",
                 "template": {}
               }
+            },
+            "da": {
+              "name": "text",
+              "type": "text"
             }
           }
         },
         {
           "title": "Title",
           "id": "title",
+          "model": "title",
           "plugins": {
             "xwalk": {
               "page": {
@@ -27,24 +33,44 @@
                   "model": "title"
                 }
               }
+            },
+            "da": {
+              "name": "title",
+              "type": "title"
             }
           }
         },
         {
           "title": "Image",
           "id": "image",
+          "model": "image",
           "plugins": {
             "xwalk": {
               "page": {
                 "resourceType": "core/franklin/components/image/v1/image",
                 "template": {}
               }
+            },
+            "da": {
+              "name": "image",
+              "type": "image",
+              "fields": [
+                {
+                  "name": "image",
+                  "selector": "img[src]"
+                },
+                {
+                  "name": "imageAlt",
+                  "selector": "img[alt]"
+                }
+              ]
             }
           }
         },
         {
           "title": "Button",
           "id": "button",
+          "model": "button",
           "plugins": {
             "xwalk": {
               "page": {
@@ -53,6 +79,19 @@
                   "model": "button"
                 }
               }
+            },
+            "da": {
+              "unsafeHTML": "<p><a href=\"\">Button Text</a></p>",
+              "fields": [
+                {
+                  "name": "link",
+                  "selector": "p>a[href]"
+                },
+                {
+                  "name": "linkText",
+                  "selector": "p>a"
+                }
+              ]
             }
           }
         }
@@ -65,6 +104,8 @@
         {
           "title": "Section",
           "id": "section",
+          "model": "section",
+          "filter": "section",
           "plugins": {
             "xwalk": {
               "page": {
@@ -73,6 +114,9 @@
                   "model": "section"
                 }
               }
+            },
+            "da": {
+              "unsafeHTML": "<div></div>"
             }
           }
         }
