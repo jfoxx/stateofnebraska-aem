@@ -1,10 +1,13 @@
 import { domEl } from '../../scripts/dom-helpers.js';
 import { createId } from '../../scripts/utils.js';
 import { accordion } from '../../scripts/deps/bundle-uswds.js';
+import { default as decorateTable } from '../table/table.js';
 
 export default function decorate( block ) {
 	let accordions = block.children;
 	let usaAccordion = domEl( 'div', { class: 'usa-accordion' } );
+
+
 
 	Array.from( accordions ).forEach( ( accordion ) => {
 		let heading = accordion.querySelector( 'h2, h3, h4, h5, h6' );
@@ -25,6 +28,30 @@ export default function decorate( block ) {
 
 		// Create new content div
 		let contentEl = domEl( 'div', { class: 'usa-accordion__content usa-prose', id: accordionId, 'hidden': 'true' } );
+
+		if ( block.classList.contains( 'tabs' ) && accordions.length <= 5 ) {
+			contentEl.style.gridColumnEnd = accordions.length + 1;
+			usaAccordion.style.gridTemplateColumns = `repeat( ${accordions.length}, 1fr )`;
+			block.classList.add( 'tabs-grid' );
+
+			block.addEventListener( 'click', ( e ) => {
+				if ( e.target.type == 'button' ) {
+					if ( e.target.getAttribute( 'aria-expanded' ) == 'true' ) {
+						e.target.setAttribute( 'aria-expanded', 'true' );
+						const drawers = block.querySelectorAll( '.usa-accordion__content' );
+
+						drawers.forEach( drawer => {
+							if ( drawer.hidden == true ) {
+								e.stopPropagation(  );
+							}
+						} );
+
+					}
+
+				}
+			} );
+		}
+
 		contentEl.appendChild( content );
 
 		// Append new elements
@@ -32,7 +59,30 @@ export default function decorate( block ) {
 		usaAccordion.appendChild( contentEl );
 	} );
 
+	if ( block.classList.contains( 'tabs' ) ) {
+		const button = usaAccordion.querySelector( 'button' );
+		button.setAttribute( 'aria-expanded', 'true' );
+	}
+
 	block.textContent = '';
 	block.appendChild( usaAccordion );
-	accordion.on();
+
+	// Fixing tables inside of accordion
+	const tables = usaAccordion.querySelectorAll( '.usa-accordion__content> div> table ' );
+
+	tables.forEach( table => {
+		decorateTable( table );
+
+		const container = table.closest( 'div' );
+		const innerTable = table.querySelector( 'table' );
+
+		if( innerTable ){
+			container.append( innerTable );
+			table.remove();
+		}
+	} );
+
+	accordion.on(  );
+
+
 }

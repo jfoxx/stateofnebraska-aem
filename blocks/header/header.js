@@ -4,10 +4,9 @@ import { a, domEl } from '../../scripts/dom-helpers.js';
 import { header, accordion } from '../../scripts/deps/bundle-uswds.js';
 import { getIndividualIcon, isSameDomainOrSubdomain } from '../../scripts/utils.js';
 
-
 async function decorateSkipnav( placeholders ) {
 	const { skipnav } = placeholders;
-	const skipNav = a( { class: 'usa-skipnav', href: '#main-content' }, skipnav ? skipnav : 'Skip to main content' );
+	const skipNav = a( { class: 'usa-skipnav', href: '#main-content', id: 'skip' }, skipnav ? skipnav : 'Skip to main content' );
 	return skipNav;
 }
 
@@ -20,6 +19,40 @@ async function loadBanner() {
 	return loadBlock( bannerBlock );
 }
 
+// Store all dropdown references for alignment checking
+const dropdownRegistry = [];
+
+function checkDropdownAlignment( dropdown ) {
+	if ( !dropdown || dropdown.hasAttribute( 'hidden' ) || dropdown.classList.contains( 'usa-megamenu' ) ) return;
+
+	const navInner = dropdown.closest( '.usa-nav__inner' );
+	if ( !navInner ) return;
+	
+	// Naturally left aligned (via CSS)
+	dropdown.style.left = '';
+	dropdown.style.right = '';
+	const dropdownRect = dropdown.getBoundingClientRect();
+
+	const containerRect = navInner.getBoundingClientRect();
+
+	// Check if dropdown extends beyond right edge of container
+	if ( dropdownRect.right > containerRect.right ) {
+		dropdown.style.left = 'auto';
+		// Align to right edge of related button
+		const button = dropdown.previousElementSibling;
+		const buttonOffset = button.offsetParent.getBoundingClientRect().right - button.getBoundingClientRect().right;
+		dropdown.style.right = buttonOffset + 'px';
+	}
+}
+
+function checkAllDropdownAlignments() {
+	dropdownRegistry.forEach( ( { dropdown, parent } ) => {
+		if ( !dropdown.hasAttribute( 'hidden' ) ) {
+			checkDropdownAlignment( dropdown, parent );
+		}
+	} );
+}
+
 async function createSubMenu( subMenu, id ) {
 	let listItem = subMenu.querySelectorAll( 'ul > li' );
 	if ( listItem.length > 0 ) {
@@ -29,7 +62,25 @@ async function createSubMenu( subMenu, id ) {
 		subMenu.prepend( button );
 		subMenu.querySelector( 'p' ).remove();
 
+		const linkCount = listItem.length;
+		let itemsPerColumn = linkCount;
+		let isMegaMenu = false;
+
+		if ( linkCount >= 2 && linkCount <= 8 ) {
+			itemsPerColumn = linkCount; // 1 column
+		} else if ( linkCount >= 9 && linkCount <= 12 ) {
+			itemsPerColumn = Math.ceil( linkCount / 2 ); // 2 columns
+		} else if ( linkCount > 12 ) {
+			itemsPerColumn = Math.ceil( linkCount / 4 ); // 4 columns
+			isMegaMenu = true;
+		}
+
 		const subNav = domEl( 'div', { id: 'extended-mega-nav-section-' + id, class: 'usa-nav__submenu', hidden: true } );
+
+		if ( isMegaMenu ) {
+			subNav.classList.add( 'usa-megamenu' );
+		}
+
 		const grid = domEl( 'div', { class: 'grid-row grid-gap-4' } );
 		subNav.append( grid );
 		subMenu.append( subNav );
@@ -37,7 +88,7 @@ async function createSubMenu( subMenu, id ) {
 		let column = '';
 		let ul = '';
 		for ( const [index, element] of listItem.entries() ) {
-			if ( index % 4 === 0 ) {
+			if ( index % itemsPerColumn === 0 ) {
 				column = domEl( 'div', { class: 'grid-col' } );
 				ul = domEl( 'ul', { class: 'usa-nav__submenu-list'} );
 				column.append( ul );
@@ -52,6 +103,19 @@ async function createSubMenu( subMenu, id ) {
 				element.querySelector( '.usa-button__wrap' ).remove();
 			}
 		}
+
+		// Register this dropdown for alignment checking
+		dropdownRegistry.push( { dropdown: subNav, parent: subMenu } );
+
+		// Check alignment when dropdown is opened
+		button.addEventListener( 'click', () => {
+			// Finish the event stack, then check
+			setTimeout( () => {
+				if ( !subNav.hasAttribute( 'hidden' ) ) {
+					checkDropdownAlignment( subNav, subMenu );
+				}
+			}, 1 );
+		} );
 	} else {
 		subMenu.prepend( subMenu.firstElementChild.firstElementChild );
 		subMenu.lastElementChild.remove();
@@ -71,34 +135,33 @@ async function createSubMenu( subMenu, id ) {
 function createSecondaryMenu( innerMenu, searchResultsUrl, showDropdowns ) {
 	const url = new URL( window.location );
 	const domain = url.origin;
-	const input = domEl( 'input', { class: 'usa-input usa-text-input', id: 'search-field', type: 'search', name: 'q' } );
-	const img = domEl( 'img', { class: 'usa-search__submit-icon', alt: 'Search', src: `${domain}/icons/usa-icons/search.svg` } );
+	const input = domEl( 'input', { class: 'usa-input usa-text-input', id: 'search-field', type: 'search', name: 'q', required: 'required' } );
+	const img = domEl( 'img', { class: 'usa-search__submit-icon', alt: 'Submit Search', src: `${domain}/icons/usa-icons/search.svg` } );
 	const searchButton = domEl( 'button', { class: 'usa-button', type: 'submit' } );
 	searchButton.append( img );
-	const label = domEl( 'label', { class: 'usa-sr-only', for: 'search-field' } );
+	const label = domEl( 'label', { class: 'usa-sr-only', for: 'search-field' }, 'Search this website' );
 	const form = domEl( 'form', { class: 'usa-search usa-search--small', role: 'search', action: searchResultsUrl } );
 
 	form.append( label );
 	form.append( input );
 	form.append( searchButton );
-	let searchLabel = form.querySelector( '.usa-sr-only' );
-	searchLabel.innerHTML = 'Search';
 
 	const secondaryNav = domEl( 'div', { class: 'usa-nav__secondary' } );
-	const searchSection = domEl( 'section', { 'aria-label': 'Search component' } );
 	let searchHeader;
 	if ( !showDropdowns ) {
 		searchHeader = domEl( 'p', { class: 'usa-nav__search-header' }, 'Search' );
-		searchSection.append( searchHeader );
+		secondaryNav.append( searchHeader );
 	}
-	searchSection.append( form );
-	secondaryNav.append( searchSection );
+	secondaryNav.append( form );
 	innerMenu.append( secondaryNav );
 
 	const closeImage = domEl( 'img', { role: 'img', alt: 'Close', src: '../../icons/usa-icons/close.svg' } );
 	const closeButton = domEl( 'button', { class: 'usa-nav__close', type: 'button' } );
+	closeButton.setAttribute( 'aria-label', 'Close primary navigation' );
+	closeButton.setAttribute( 'aria-controls', 'mobile-nav' );
 	closeButton.append( closeImage );
 	innerMenu.prepend( closeButton );
+	return secondaryNav;
 }
 
 async function loadAndDecorateNav() {
@@ -106,8 +169,16 @@ async function loadAndDecorateNav() {
 	const navPath = navMeta ? new URL( navMeta, window.location ).pathname : '/nav';
 	const navFragment = await loadFragment( navPath );
 	const innerNav = domEl( 'div', { class: 'usa-nav__inner' } );
-	
+
 	if ( !navFragment ) return innerNav;
+
+	// Set up single resize listener for all dropdowns
+	let resizeTimeout;
+	const debouncedCheckAlignment = () => {
+		clearTimeout( resizeTimeout );
+		resizeTimeout = setTimeout( checkAllDropdownAlignments, 150 );
+	};
+	window.addEventListener( 'resize', debouncedCheckAlignment, { passive: true } );
 
 	let navChildren = navFragment.children;
 	const showDropdowns = navChildren.length > 2;
@@ -133,10 +204,10 @@ async function loadAndDecorateNav() {
 	const searchLink = navFragment.querySelector( 'div.section:last-child a' );
 	const searchResultsUrl = searchLink ? searchLink.href : '/search-results';
 
-	createSecondaryMenu( innerNav, searchResultsUrl, showDropdowns );
-	const nav = domEl( 'nav', { class: 'usa-nav', 'aria-label': 'Primary navigation' } );
+	const secondaryNav = createSecondaryMenu( innerNav, searchResultsUrl, showDropdowns );
+	const nav = domEl( 'nav', { class: 'usa-nav', 'aria-label': 'Primary navigation', id: 'mobile-nav' } );
 	nav.append( innerNav );
-	const container = domEl( 'div', {} );
+	const container = domEl( 'div', { class: 'usa-nav-container' } );
 	const navClass = `usa-header usa-header--extended${!showDropdowns ? ' usa-header--small' : '' }`;
 	const navWrapper = domEl( 'div', { class: navClass } );
 	container.append( nav );
@@ -148,16 +219,51 @@ async function loadAndDecorateNav() {
 		link.append( picture );
 	}
 
-	const img = domEl( 'div', { class: 'usa-logo__text' }, link );
+	// Toggle aria-expanded tag on menu btn
+	function toggleAriaExpanded (){
+		let expanded = nav.classList.contains( 'is-visible' );
+		menu.setAttribute( 'aria-expanded', !expanded );
+	}
+
+	const img = domEl( 'div', { class: 'usa-logo__img' }, link );
 
 	const logo = domEl( 'div', { class: 'usa-logo' } );
 	logo.append( img );
+	const logoTagLines = [...navFragment.querySelectorAll( '.default-content-wrapper p' )]
+		.filter( ( p ) => !p.classList.contains( 'usa-button__wrap' ) && p.textContent.trim().length > 0 );
+
+	if ( logoTagLines.length > 0 ) {
+		const logoTextWrap = domEl( 'div', { class: 'usa-logo__text-wrap' } );
+		const pipe = domEl( 'span', { class: 'usa-logo__pipe', 'aria-hidden': 'true' } );
+		const logoTextDiv = domEl( 'div', { class: 'usa-logo__text' }, logoTagLines[0], logoTagLines[1] ? logoTagLines[1] : '' ); // Get up to 2 tag lines
+		logoTextWrap.append( pipe, logoTextDiv );
+		logo.append( logoTextWrap );
+	}
 	const navBar = domEl( 'div', { class: 'usa-navbar' } );
 	navBar.append( logo );
 	const menuButton = domEl( 'button', { class: 'usa-menu-btn', type: 'button' } );
 	navBar.append( menuButton );
 	let menu = navBar.querySelector( '.usa-menu-btn' );
 	menu.innerHTML = 'Menu';
+	menu.setAttribute( 'aria-label', 'Open primary navigation' );
+	menu.setAttribute( 'aria-controls', 'mobile-nav' );
+	menu.setAttribute( 'aria-expanded', 'false' );
+
+	const desktopMQ = window.matchMedia( '(min-width: 64em)' );
+	function placeSearch(){
+		if ( desktopMQ.matches ) {
+			navBar.insertBefore( secondaryNav, menuButton );
+		} else {
+			innerNav.append( secondaryNav );
+		}
+	}
+	placeSearch();
+	desktopMQ.addEventListener( 'change', placeSearch );
+
+	const closeButton = nav.querySelector( 'button' );
+	menu.addEventListener( 'click', () => toggleAriaExpanded() );
+	closeButton.addEventListener( 'click', () => toggleAriaExpanded() );
+
 	container.prepend( navBar );
 	navWrapper.append( container );
 	return navWrapper;
@@ -198,6 +304,7 @@ async function loadAndDecorateAlert() {
  * @param {Element} block The header block element
  */
 export default async function decorate( block ) {
+	document.querySelector( 'header' ).setAttribute( 'aria-hidden', 'false' ); 
 	const placeholders = await fetchPlaceholders();
 
 	const skipNav = await decorateSkipnav( placeholders );

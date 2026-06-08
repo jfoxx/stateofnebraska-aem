@@ -9,10 +9,20 @@
 	background-color: color('primary-dark');
 
 	.usa-navbar {
+		display: flex;
+		align-items: center;
 		justify-content: space-between;
 		height: fit-content;
 		border-bottom: 0;
+
+		.usa-nav__secondary {
+			position: static;
+			margin-top: 0;
+			margin-bottom: 0;
+			margin-left: auto;
+		}
 	}
+
 	
 	.grid-col {
 		flex: 1 1 auto;
@@ -22,30 +32,73 @@
 	.usa-logo {
 		@include u-margin-y(3);
 		position: relative;
-		flex: 0 0 auto;
-		width: px-to-rem(180px);
-		height: px-to-rem(50px);
+		display: flex;
+		align-items: center;
+		min-width: 0;
+		margin: 0;
+		margin-right: units(1);
+
+		a{
+			&:focus{
+				display: inline-block;
+				outline-offset: -.25rem;
+			}
+		}
 		
-		@include at-media('tablet') {
-			width: px-to-rem(320px);
+		&__img {
+			picture {
+				@include u-margin-y(1);
+	
+				img {
+					width: auto;
+					max-width: px-to-rem(195px);
+					height: clamp(px-to-rem(52px), 4vw, px-to-rem(96px));
+					object-fit: contain;
+				}
+			}
 		}
 
-		&__text,
-		a,
-		picture,
-		img {
-			position: absolute;
-			inset: 0;
-			width: 100%;
-			height: 100%;
+		&__text-wrap {
+			display: flex;
+			align-items: center;
 		}
 
-		picture,
-		img {
-			margin: 0;
-			object-fit: scale-down;
-			object-position: left;
+		&__pipe {
+			align-self: stretch;
+			width: 0;
+			min-height: 2.5rem;
+			margin: 20px 8px;
+			border-left: 1px solid color('white');
 		}
+
+		&__text {
+			@include u-font-family('body');
+			margin-left: 4px;
+			color: color('white');
+			font-size: size('body', 'sm');
+			font-weight: font-weight('normal');
+	
+			p {
+				margin-top: 0;
+				padding-top: units(.5);
+				padding-bottom: units(.5);
+
+				&:not(:first-child) {
+					padding-top: 0;
+				}
+
+				&:not(:last-child) {
+					padding-bottom: 0;
+				}
+
+				strong {
+					font-size: size('body', 'lg');
+				}
+			}
+	
+		}
+
+		
 	}
 
 	.usa-menu-btn {
@@ -141,12 +194,55 @@
 		.usa-nav__submenu {
 			width: fit-content;
 			min-width: px-to-rem(350px);
-			background-color: color('primary-darkest'); 
+			
+			a {
+				width: fit-content;
+			}
+			
+			&:has(.grid-col:nth-child(2)) {
+				min-width: px-to-rem(500px);
+			}
+			
+			&.usa-megamenu {
+				width: 100%;
+				margin: 0;
+
+				.usa-nav__submenu-item { // grid handles horizontal spacing
+					a {
+						padding-right: 0;
+						padding-left: 0;
+					}
+				}
+			}
+		}
+
+		&.usa-header--extended { // stronger selector to override
+			.usa-nav__submenu {
+				&,
+				&:before,
+				&:after {
+					background-color: color('primary-darkest');
+				}
+			}
+
+			.usa-nav__primary {
+				// Offset so that the link text is visually aligned to the edges (link overflows with it's padding)
+				$link-padding: units(2); // set by uswds
+				width: calc(100% + #{$link-padding * 2});
+				margin-right: -1 * $link-padding;
+				// margin-left: -1 * $link-padding; // already set by uswds
+			}
 		}
 
 		.usa-nav {
 			// needs to be nested for styles to take
 			border-color: color('primary-light');
+
+			&-container{
+				@include u-margin(0);
+				@include u-padding(0);
+				max-width: none;
+			}
 			
 			&__search-header {
 				display: none;
@@ -249,12 +345,35 @@
 				}
 			}
 		}
-		
-		&.usa-header--small {
-			.usa-nav__secondary {
-				bottom: units(4); // in official USWDS this was labeled as "magic number" -- I just needed it halved in order to align correctly
-				margin-bottom: 0;
+	}
+
+	@include at-media-max('tablet') {
+		.usa-logo {
+			&__img {
+				picture {
+					img {
+						width: auto;
+						max-width: px-to-rem(95px);
+						object-fit: contain;
+					}
+				}
 			}
+
+			&__text{
+				@include u-font-size('ui', '2xs');
+
+				p {
+					strong {
+						font-size: size('ui', 'md');
+					}
+				}
+			}
+		}
+	}
+
+	@include at-media-max('desktop') {
+		.usa-navbar {
+			@include u-padding-left(2);
 		}
 	}
 }

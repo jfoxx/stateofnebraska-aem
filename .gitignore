@@ -1,7 +1,9 @@
+.vscode
 .hlx
 coverage
 logs
 node_modules
+.agents
 
 helix-importer-ui
 .DS_Store
@@ -10,3 +12,4 @@ helix-importer-ui
 .env
 .configs
 *.code-workspace
+_refs/

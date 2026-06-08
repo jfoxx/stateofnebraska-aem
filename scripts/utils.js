@@ -24,6 +24,7 @@ function debounce( func, wait ) {
  */
 function normalizeId( str ) {
 	str = `${str}`; // just in case it wasn't a string already
+	str = str.trim();
 	str = str.toLowerCase();
 	str = str.replace( /-/g, ' ' );
 	str = str.match( /[\w\s]/g ).join( '' );
@@ -118,6 +119,43 @@ function checkIfRowExists( el, rowNum ) {
 }
 
 /**
+ * This is helper used by getIndividualIcons() to reduce duplicate network requests for the same icon URL.
+ * Caches the Promise and removes the failed requests so it can retry.
+ * @async
+ * @function fetchSvgText
+ * @param {string} url
+ */
+
+const svgCache = {};
+function fetchSvgText( url ) {
+	if ( !svgCache[url] ) {
+		svgCache[url] = fetch( url ).then( ( resp ) => {
+			if ( !resp.ok ) throw new Error( `Failed to fetch SVG (${resp.status})` );
+			return resp.text();
+		} ).catch( ( error ) => {
+			delete svgCache[url];
+			throw error;
+		} );
+	}
+	return svgCache[url];
+}
+
+/**
+ * This is a helper for getIndividualIcons() so we can try priamary and secondary path.
+ * @async
+ * @function fetchSvg
+ * @param {string} primaryUrl - primary url is the usa-icons directory, most icons will live here
+ * @param {string} secondarydUrl - secondary is for icons in the custom directory.
+ */
+async function fetchSvg( primaryUrl, secondaryUrl ) {
+	try {
+		return await fetchSvgText( primaryUrl );
+	} catch ( error ) {
+		return await fetchSvgText( secondaryUrl );
+	}
+}
+
+/**
  * Asynchronously loads a USWDS SVG icon into a given element.
  * @async
  * @function getIndividualIcon
@@ -125,23 +163,15 @@ function checkIfRowExists( el, rowNum ) {
  * @param {string} iconName    - The icon name (e.g., 'arrow_back').
  * @param {string} [prefix=''] - Optional prefix to prepend to the icon path.
  */
-const svgCache = {};
 
 // Return a promise for fetching (or getting from cache)
 async function getIndividualIcon( el, iconName, prepend = false, prefix = '' ) {
-	let link;
-	link = `${window.hlx.codeBasePath}${prefix}/icons/usa-icons/${iconName}.svg`;
 
-	// Cache based on the link, since that's what's fetched
-	if ( !svgCache[link] ) {
-		// Store the promise, not just the resolved text
-		svgCache[link] = fetch( link ).then( resp => {
-			if ( !resp.ok ) throw new Error( 'Failed to fetch SVG' );
-			return resp.text();
-		} );
-	}
+	const primaryPath = `${window.hlx.codeBasePath}${prefix}/icons/usa-icons/${iconName}.svg`;
+	const secondaryPath = `${window.hlx.codeBasePath}${prefix}/icons/custom/${iconName}.svg`;
+
 	try {
-		const svgContent = await svgCache[link];
+		const svgContent = await fetchSvg( primaryPath, secondaryPath );
 		const originalText = el.innerHTML;
 		if ( prepend ) {
 			el.innerHTML = svgContent + originalText; // prepend the SVG
@@ -199,4 +229,19 @@ function isSameDomainOrSubdomain( url ) {
 	}
 }
 
-export { debounce, normalizeId, createId, addClassToLists, addClassToLinks, fetchIndex, removeEmptyChildren, checkIfRowExists, getIndividualIcon, isSameDomainOrSubdomain  };
+function getMonthNumber( monthName ) {
+	// Create a date string that the Date constructor can reliably parse.
+	// Adding "1, 2023" ensures a valid date string.
+	const dateString = `${monthName} 1, 2023`;
+	const dateObject = new Date( dateString );
+
+	// Check if the date is valid
+	if ( isNaN( dateObject.getMonth() ) ) {
+		return false;
+	}
+
+	// getMonth() returns a 0-based index (0 for January) plus 1
+	return dateObject.getMonth() + 1 ;
+}
+
+export { debounce, normalizeId, createId, addClassToLists, addClassToLinks, fetchIndex, removeEmptyChildren, checkIfRowExists, getIndividualIcon, isSameDomainOrSubdomain, getMonthNumber };

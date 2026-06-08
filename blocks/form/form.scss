@@ -2,7 +2,25 @@
 @use 'sass:meta';
 @use 'sass:math';
 
-$uswds-block: 'usa-banner';
+$block: 'form';
+
+// stylelint-disable-next-line scss/selector-nest-combinators
+.#{$block}.block {
+	&.full-width {
+
+		p, form, button {
+			max-width: 100%;
+		}
+	}
+}
+
+form {
+	&:not(.edit-mode) {
+		[data-visible='false'] {
+			display: none !important; // stylelint-disable-line declaration-no-important
+		}
+	} 
+}
 
 .form-wrapper {
 	@include meta.load-css('~uswds/uswds-form-controls/index'); // avoid affecting top search
@@ -110,5 +128,16 @@ $uswds-block: 'usa-banner';
 		legend {
 			margin-top: 0 !important; // stylelint-disable-line declaration-no-important
 		}
+	}
+}
+
+// stylelint-disable-next-line scss/selector-nest-combinators
+.#{$block}.block.full-width {
+	// Gives control to form editor to determine layout of fields
+	p, 
+	form, 
+	button,
+	.field-label {
+		max-width: 100%;
 	}
 }

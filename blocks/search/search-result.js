@@ -99,6 +99,13 @@ function renderTags( result, titleTag, searchTerms, collectionBody ) {
 	}
 }
 
+function renderImage( result, resultItem ) {
+	if( result.image &&  result.imageAlt ){
+		const img = domEl( 'img', { class: 'usa-collection__img' , src: result.image, alt: result.imageAlt } );
+		resultItem.prepend( img );
+	}
+}
+
 /**
  * Renders a single search result item using the USA collection item template
  * @param {Object} result - The search result data
@@ -108,14 +115,18 @@ function renderTags( result, titleTag, searchTerms, collectionBody ) {
  * @param {Boolean} filter - whether or not the search has been filtered
  * @param {string} sort - the item to sort by
  * @param {string} externalURL - whether or not the rendered results should go to a different url
+ * @param {Boolean} showDescription  - whether or not to render description for results
+ * @param {Boolean} showImage - whether or not to render images for results
  * @returns {HTMLElement} - The rendered search result list item
  */
-export default function renderResult( result, searchTerms, titleTag, filter, dynamicCollection, sort, externalURL ) {
+export default function renderResult( result, searchTerms, titleTag, filter, dynamicCollection, sort, externalURL , showDescription, showImage ) {
 	const resultItem = li( { class: 'usa-collection__item' } );
 	const collectionBody = div( { class: 'usa-collection__body' } );
-
+	
 	if ( dynamicCollection ) {
 		renderTitle( result, titleTag, searchTerms, collectionBody, externalURL );
+		if( showDescription ) renderDescription( result, titleTag, searchTerms, collectionBody, externalURL );
+		if( showImage ) renderImage( result, resultItem );
 		renderDate( result, titleTag, searchTerms, collectionBody, filter, sort );
 	} else {
 		renderTitle( result, titleTag, searchTerms, collectionBody, externalURL );

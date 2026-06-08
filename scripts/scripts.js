@@ -2,7 +2,9 @@ import {
 	buildBlock,
 	loadHeader,
 	loadFooter,
-	decorateSections,
+	readBlockConfig,
+	toCamelCase,
+	toClassName,
 	decorateBlocks,
 	decorateBlock,
 	decorateTemplateAndTheme,
@@ -47,6 +49,10 @@ function buildHeroBlock( main, templateName ) {
 			desc = heroSection.querySelectorAll( 'p, ul, ol' );
 		}
 		heroBlock = buildBlock( 'hero-homepage', { elems: [picture, h1, ...desc] } );
+
+		if( !heroSection.textContent.trim().length ) {
+			heroSection.remove();
+		}
 	} else {
 		heroBlock = buildBlock( 'hero', { elems: [picture, h1] } );
 	}
@@ -182,7 +188,7 @@ function decorateExternalLinks( element ) {
 		a.title = a.title || a.textContent;
 		if ( a.textContent && a.href !== a.textContent ) { // only decorate if the link is wrapping text content
 			if ( !a.querySelector( 'img' ) ) {
-				if( isPDFUrl( a.href ) ) {
+				if ( isPDFUrl( a.href ) ) {
 					a.classList.add( 'usa-link--pdf' );
 					a.setAttribute( 'target', '_blank' );
 					getIndividualIcon( a, 'file-pdf' );
@@ -224,25 +230,28 @@ function decorateYouTube( element ) {
 		// extract the video ID from the link
 		const youtubeRegex = /(?:https?:\/\/(?:m\.)?(?:www\.)?youtu(?:\.be\/|(?:be-nocookie|be)\.com\/)(?:watch|\w+\?(?:feature=\w+\.\w+&)?v=|v\/|e\/|embed\/|live\/|shorts\/|user\/(?:[\w#]+\/)+))([^&#?\n]+)/i;
 		const id = youtubeRegex.exec( link.href )?.[1];
-		if( !id ) return;
+		if ( !id ) return;
 
 		let parent = link.closest( 'p' );
 
 		// stop if it's a button
-		if( parent?.classList.contains( 'usa-button__wrap' ) ) return;
+		if ( parent?.classList.contains( 'usa-button__wrap' ) ) return;
+
+		// stop if it's inside a contact-card-grid (links should remain as links, not embeds)
+		if( link.closest( '.contact-card-grid' ) ) return;
 
 		// stop if there's text ahead of the link
-		if( link.previousSibling?.textContent.trim().length ) return;
+		if ( link.previousSibling?.textContent.trim().length ) return;
 
 		// text after the link is used as alt text if wrapped in parentheses
 		const textAfter = link.nextSibling?.textContent.trim();
 		let titleText = '';
-		if( textAfter && textAfter[0] === '(' && textAfter[textAfter.length - 1] === ')' ) {
+		if ( textAfter && textAfter[0] === '(' && textAfter[textAfter.length - 1] === ')' ) {
 			titleText = textAfter.substring( 1, textAfter.length - 1 );
 		}
 
 		// stop if there's text after which is not wrapped in parenthesis (assuming a paragraph)
-		if( textAfter && !titleText ) return;
+		if ( textAfter && !titleText ) return;
 
 		const wrapper = domEl( 'figure', { class: 'video-embed' } );
 		const iframe = domEl( 'iframe', {
@@ -284,7 +293,6 @@ function decorateGoogleMaps( element ) {
 
 		// stop if it's a button
 		if ( parent?.classList.contains( 'usa-button__wrap' ) ) return;
-
 		// stop if there's text ahead of the link
 		if ( link.previousSibling?.textContent.trim().length ) return;
 
@@ -360,43 +368,42 @@ function decorateGoogleMaps( element ) {
  */
 function decorateIconList( element ) {
 	element.querySelectorAll( 'ul' ).forEach( ( ul ) => {
-		if( !ul.closest( 'body' ) ) { return; } // skip if ul is not in the DOM (i.e. a fragment)
+		if ( !ul.closest( 'body' ) ) { return; } // skip if ul is not in the DOM (i.e. a fragment)
 
 		// already decorated
-		if ( ul.classList.contains( 'usa-icon-list' ) ) return; 
-		
+		if ( ul.classList.contains( 'usa-icon-list' ) ) return;
 		// only decorate if all li elements have an icon
 		const lis = ul.querySelectorAll( ':scope > li' );
-		if( ul.querySelectorAll( ':scope > li .icon:first-child' ).length !== lis.length ) return;
+		if ( ul.querySelectorAll( ':scope > li .icon:first-child' ).length !== lis.length ) return;
 
 		ul.classList.add( 'usa-icon-list' );
-		if( ul.querySelector( 'h2, h3, h4' ) ) {
+		if ( ul.querySelector( 'h2, h3, h4' ) ) {
 			ul.classList.add( 'usa-icon-list--size-lg' );
 		}
 
 		lis.forEach( ( li ) => {
 			li.classList.add( 'usa-icon-list__item' );
-			
+
 			// leaving as a span because decorateIcon is still potentially working with it asynchronously
 			const iconEle = li.querySelector( '.icon' );
 			iconEle.classList.add( 'usa-icon-list__icon' );
 
 			const contentWrapper = div( { class: 'usa-icon-list__content' } );
-			while( li.firstChild ) {
+			while ( li.firstChild ) {
 				const child = li.firstChild;
-				
+
 				// move everything after the br to a new paragraph
-				if( child.tagName && ['H2', 'H3', 'H4'].includes( child.tagName.toUpperCase() ) ) {
+				if ( child.tagName && [ 'H2', 'H3', 'H4' ].includes( child.tagName.toUpperCase() ) ) {
 					const after = document.createElement( 'p' );
-					let found = false;
+					let foundBR = false;
 					child.childNodes.forEach( c => {
-						if( found ) {
+						if ( foundBR ) {
 							after.appendChild( c );
-						} else if ( c.tagName == 'BR' ) {
-							found = true;
+						} else if ( c.tagName?.toUpperCase() === 'BR' ) {
+							foundBR = true;
 						}
 					} );
-					
+
 					contentWrapper.appendChild( child ); // the title
 					contentWrapper.appendChild( after );
 				} else {
@@ -404,31 +411,31 @@ function decorateIconList( element ) {
 				}
 			}
 			li.appendChild( contentWrapper );
-			
+
 			li.prepend( iconEle ); // pull the icon back out to the front
 		} );
 	} );
 }
 
 function decorateImgs( element ) {
-	element.querySelectorAll( 'p img:only-child, p picture:only-child, p figure:only-child' ).forEach( ( img ) => {
+	element.querySelectorAll( 'p img:only-child, p picture:only-child, p figure:only-child p' ).forEach( ( img ) => {
 		// if there is nothing else in the paragraph, unwrap the image
-		if( !img.closest( 'body' ) ) { return; } // skip if ul is not in the DOM (i.e. a fragment)
+		if ( !img.closest( 'body' ) ) { return; } // skip if ul is not in the DOM (i.e. a fragment)
 
 		const pEle = img.closest( 'p' );
 		let isOnlyNode = true;
 		pEle.childNodes.forEach( ( childNode ) => {
-			if( childNode !== img && childNode.textContent.trim().length > 0 ) {
+			if ( childNode !== img && childNode.textContent.trim().length > 0 ) {
 				isOnlyNode = false;
 			}
 		} );
 
-		if( isOnlyNode ) {
+		if ( isOnlyNode ) {
 			pEle.replaceWith( img );
 		}
 	} );
 }
-		
+
 
 
 /**
@@ -441,9 +448,136 @@ export function decorateMain( main ) {
 
 }
 
+function decorateSections( main ) {
+	const templateData = getMetadata( 'layout' ).trim().toLowerCase();
+	const isFullWidthTemplate = ( templateData !== 'side-nav' ) && ( templateData !== 'in-page-nav' );
+
+	main.querySelectorAll( ':scope > div' ).forEach( ( section ) => {
+		const wrappers = [];
+		let defaultContent = false;
+		[...section.children].forEach( ( e ) => {
+			if ( e.tagName === 'DIV' || !defaultContent ) {
+				const wrapper = document.createElement( 'div' );
+				wrappers.push( wrapper );
+				defaultContent = e.tagName !== 'DIV';
+				if ( defaultContent ) wrapper.classList.add( 'default-content-wrapper' );
+			}
+			wrappers[wrappers.length - 1].append( e );
+		} );
+		wrappers.forEach( ( wrapper ) => section.append( wrapper ) );
+		section.classList.add( 'section' );
+		section.dataset.sectionStatus = 'initialized';
+		section.style.display = 'none';
+
+		// Process section metadata
+		const sectionMeta = section.querySelector( 'div.section-metadata' );
+		const hasIconButtonGrid = section.querySelector( '.icon-button-grid' ) !== null;
+		const hasFilledCards = section.querySelector( '.info-card-grid.filled, .info-card-grid .icon, .linked-card-grid.filled' ) !== null;
+		const backgroundOptions = { 'light': false, 'dark': false, 'theme': false };
+
+		if ( sectionMeta ) {
+			const meta = readBlockConfig( sectionMeta );
+
+			Object.keys( meta ).forEach( ( key ) => {
+				if ( key === 'style' ) {
+					const styles = meta.style
+						.split( ',' )
+						.filter( ( style ) => style )
+						.map( ( style ) => toClassName( style.trim() ) );
+					styles.forEach( ( style ) => section.classList.add( style ) );
+				} else if ( key === 'layout' ) {
+					const cols = meta[key].split( '/' ).map( ( n ) => Number( n.trim() ) );
+					const sum = cols.reduce( ( a, b ) => a + b, 0 );
+					const isValidLayout = cols.length >= 2
+						&& cols.every( ( n ) => Number.isInteger( n ) && n > 0 )
+						&& sum === 12;
+
+					if ( isValidLayout ) {
+						section.dataset.layout = cols.join( '/' );
+						section.classList.add( 'grid-row', 'grid-gap' );
+
+						const divs = Array.from( section.children ).filter(
+							el => !el.querySelector( '.section-metadata' )
+						);
+
+						divs.forEach( ( div, i ) => {
+							const colSize = cols[i % cols.length];
+							div.classList.add( `desktop:grid-col-${colSize}` );
+						} );
+					}
+				}
+				else if ( key === 'background' ) {
+					const value = String( meta[key] ?? '' ).trim().toLowerCase();
+
+					if( Object.keys( backgroundOptions ).includes( value ) ) {
+						section.classList.add( 'section-background', 'section-background--' + value );
+						backgroundOptions[value] = true;
+						
+						if( isFullWidthTemplate ) {
+							// Apply full-width background treatment
+							section.classList.add( 'section-background--full' );
+						}
+					} else {
+						// Invalid option was selected, behave as default section
+						section.classList.remove( 'section-background' );
+					}
+				} else if( key === 'background-image' ) {
+					const value = String( meta[key] ?? '' ).trim();
+
+					if( isFullWidthTemplate && value && value.length ) {
+						let url;
+						try {
+							url = new URL( value );
+						} catch( e ) { console.warn( 'Invalid URL in background-image', value, section ); }
+
+						if( url ) {
+							// Bump up from the default DA size
+							if( url.searchParams.get( 'width' ) === 750 ) {
+								url.searchParams.set( 'width', 1920 );
+							}
+
+							section.prepend( div( {
+								class: 'section-background__image'
+							}, div( {
+								class: 'section-background__image-inner',
+								style: `background-image:url("${url}")`,
+							} ) ) );
+							section.classList.add( 'section-background', 'section-background--image' );
+						}
+					}
+				} else {
+					section.dataset[toCamelCase( key )] = meta[key];
+				}
+			} );
+
+			// Default to dark if this component is within and background isn't specified
+			if( hasIconButtonGrid && Object.keys( backgroundOptions ).filter( key => backgroundOptions[key] ).length ) {
+				section.classList.add( 'section-background', 'section-background--dark' );
+				if( isFullWidthTemplate ) {
+					section.classList.add( 'section-background--full' );
+				}
+			} else if( hasFilledCards && ( backgroundOptions.dark || backgroundOptions.theme ) ) {
+				// If the section has filled cards, force a light version
+				section.classList.remove( 'section-background--dark' );
+				backgroundOptions.dark = false;
+				section.classList.add( 'section-background--light' );
+				backgroundOptions.light = true;
+			}
+
+			sectionMeta.parentElement.remove(); // itself + wrapping div
+		} else if( hasIconButtonGrid ) {
+			// Default to dark if this component is within and background isn't specified
+			section.classList.add( 'section-background', 'section-background--dark' );
+			if( isFullWidthTemplate ) {
+				section.classList.add( 'section-background--full' );
+			}
+		}
+	} );
+}
+
 export function decorateInner( container ) {
 	decorateH2s( container );
-	decorateImgs( container );
+//	decorateImgs( container );
 	decorateButtons( container );
 	decorateYouTube( container );
 	decorateGoogleMaps( container );
@@ -453,7 +587,7 @@ export function decorateInner( container ) {
 	decorateBlocks( container );
 	decorateUnstyledLinks( container );
 	decorateExternalLinks( container );
-}
+}	
 
 /**
  *
@@ -526,7 +660,6 @@ async function loadEager( doc ) {
 async function loadLazy( doc ) {
 	const main = doc.querySelector( 'main' );
 	await loadSections( main );
-
 	const { hash } = window.location;
 	const element = hash ? doc.getElementById( hash.substring( 1 ) ) : false;
 	if ( hash && element ) element.scrollIntoView();
@@ -575,4 +708,4 @@ await loadPage();
 ( async function loadDa() {
 	if ( !new URL( window.location.href ).searchParams.get( 'dapreview' ) ) return;
 	import( 'https://da.live/scripts/dapreview.js' ).then( ( { default: daPreview } ) => daPreview( loadPage ) );
-}() );
+} )();
