@@ -118,6 +118,22 @@
     ]
   },
   {
+    "id": "accordion-block",
+    "fields": [
+      {
+        "component": "multiselect",
+        "name": "style",
+        "label": "Style",
+        "options": [
+          {
+            "name": "Bordered",
+            "value": "bordered"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "form",
     "fields": [
       {
