@@ -122,7 +122,6 @@
     "fields": [
       {
         "component": "multiselect",
-        "valueType": "string",
         "name": "style",
         "label": "Style",
         "options": [
@@ -139,7 +138,6 @@
     "fields": [
       {
         "component": "select",
-        "valueType": "string",
         "name": "style",
         "label": "Alert Type",
         "options": [
@@ -168,14 +166,12 @@
       {
         "component": "boolean",
         "name": "no-icon",
-        "label": "Hide Icon",
-        "valueType": "string"
+        "label": "Hide Icon"
       },
       {
         "component": "boolean",
         "name": "slim",
-        "label": "Slim",
-        "valueType": "string"
+        "label": "Slim"
       }
     ]
   },
@@ -196,7 +192,6 @@
     "fields": [
       {
         "component": "select",
-        "valueType": "string",
         "name": "layout",
         "label": "Column Layout",
         "description": "Custom desktop column widths (must total 12). Leave blank for equal-width columns.",
@@ -242,7 +237,6 @@
     "fields": [
       {
         "component": "select",
-        "valueType": "string",
         "name": "style",
         "label": "Alignment",
         "options": [
@@ -5129,8 +5123,7 @@
       {
         "component": "boolean",
         "name": "hide-breadcrumb",
-        "label": "Hide Breadcrumb",
-        "valueType": "string"
+        "label": "Hide Breadcrumb"
       }
     ]
   },
@@ -5149,7 +5142,6 @@
       },
       {
         "component": "select",
-        "valueType": "string",
         "name": "title-heading-level",
         "label": "Title Heading Level",
         "options": [
@@ -5184,7 +5176,6 @@
     "fields": [
       {
         "component": "select",
-        "valueType": "string",
         "name": "style",
         "label": "Card Style",
         "options": [
@@ -5223,7 +5214,6 @@
       },
       {
         "component": "select",
-        "valueType": "string",
         "name": "style",
         "label": "Display Mode",
         "options": [
@@ -5240,18 +5230,15 @@
       {
         "component": "boolean",
         "name": "show-search-box",
-        "label": "Show Search Box",
-        "valueType": "string"
+        "label": "Show Search Box"
       },
       {
         "component": "boolean",
         "name": "show-pagination",
-        "label": "Show Pagination",
-        "valueType": "string"
+        "label": "Show Pagination"
       },
       {
         "component": "select",
-        "valueType": "string",
         "name": "sort-key",
         "label": "Sort By",
         "options": [
@@ -5290,7 +5277,6 @@
     "fields": [
       {
         "component": "multiselect",
-        "valueType": "string",
         "name": "style",
         "label": "Table Style",
         "options": [

@@ -3,15 +3,13 @@
     {
       "title": "Columns",
       "id": "columns",
+      "model": "columns",
       "plugins": {
-        "xwalk": {
-          "page": {
-            "resourceType": "core/franklin/components/block/v1/block",
-            "template": {
-              "name": "Columns",
-              "model": "columns"
-            }
-          }
+        "da": {
+          "name": "Columns",
+          "rows": 1,
+          "columns": 2,
+          "behaviour": "columns"
         }
       }
     }
@@ -22,7 +20,6 @@
       "fields": [
         {
           "component": "select",
-          "valueType": "string",
           "name": "layout",
           "label": "Column Layout",
           "description": "Custom desktop column widths (must total 12). Leave blank for equal-width columns.",

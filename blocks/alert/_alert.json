@@ -3,15 +3,12 @@
     {
       "title": "Alert",
       "id": "alert",
+      "model": "alert",
       "plugins": {
-        "xwalk": {
-          "page": {
-            "resourceType": "core/franklin/components/block/v1/block",
-            "template": {
-              "name": "Alert",
-              "model": "alert"
-            }
-          }
+        "da": {
+          "name": "Alert",
+          "rows": 1,
+          "columns": 2
         }
       }
     }
@@ -22,7 +19,6 @@
       "fields": [
         {
           "component": "select",
-          "valueType": "string",
           "name": "style",
           "label": "Alert Type",
           "options": [
@@ -51,14 +47,12 @@
         {
           "component": "boolean",
           "name": "no-icon",
-          "label": "Hide Icon",
-          "valueType": "string"
+          "label": "Hide Icon"
         },
         {
           "component": "boolean",
           "name": "slim",
-          "label": "Slim",
-          "valueType": "string"
+          "label": "Slim"
         }
       ]
     }

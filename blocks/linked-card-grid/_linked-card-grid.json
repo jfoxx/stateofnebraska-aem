@@ -3,15 +3,12 @@
     {
       "title": "Linked Card Grid",
       "id": "linked-card-grid",
+      "model": "linked-card-grid",
       "plugins": {
-        "xwalk": {
-          "page": {
-            "resourceType": "core/franklin/components/block/v1/block",
-            "template": {
-              "name": "Linked Card Grid",
-              "model": "linked-card-grid"
-            }
-          }
+        "da": {
+          "name": "Linked Card Grid",
+          "rows": 1,
+          "columns": 1
         }
       }
     }

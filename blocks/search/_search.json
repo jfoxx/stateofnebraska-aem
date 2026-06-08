@@ -3,15 +3,22 @@
     {
       "title": "Search",
       "id": "search",
+      "model": "search",
       "plugins": {
-        "xwalk": {
-          "page": {
-            "resourceType": "core/franklin/components/block/v1/block",
-            "template": {
-              "name": "Search",
-              "model": "search"
+        "da": {
+          "name": "Search",
+          "rows": 1,
+          "columns": 1,
+          "fields": [
+            {
+              "name": "searchUrl",
+              "selector": "div>div>p>a[href]"
+            },
+            {
+              "name": "searchUrlText",
+              "selector": "div>div>p>a"
             }
-          }
+          ]
         }
       }
     }
@@ -28,7 +35,6 @@
         },
         {
           "component": "select",
-          "valueType": "string",
           "name": "style",
           "label": "Display Mode",
           "options": [
@@ -45,18 +51,15 @@
         {
           "component": "boolean",
           "name": "show-search-box",
-          "label": "Show Search Box",
-          "valueType": "string"
+          "label": "Show Search Box"
         },
         {
           "component": "boolean",
           "name": "show-pagination",
-          "label": "Show Pagination",
-          "valueType": "string"
+          "label": "Show Pagination"
         },
         {
           "component": "select",
-          "valueType": "string",
           "name": "sort-key",
           "label": "Sort By",
           "options": [
