@@ -2,7 +2,7 @@
 import { Sa11y, Lang } from './lib/sa11y.min.js';
 import Sa11yLangEn from './lib/sa11y.lang.en.js';
 import { loadCSS } from '../../../../scripts/aem.js';
-import { createElement } from '../../../../scripts/scripts.js'; // eslint-disable-line import/no-cycle
+import { domEl as createElement } from '../../../../scripts/dom-helpers.js';
 import customChecks from './custom-checks/custom-checks.js';
 
 let initializedCounter = 0;
@@ -42,7 +42,7 @@ const initAccessibilityMode = async ( shouldActivateA11yMode ) => {
 	const html = document.querySelector( 'html' );
 
 	if ( shouldActivateA11yMode ) {
-		await loadCSS( `${window.hlx.codeBasePath}/tools/sidekick/plugins/accessibility-mode/accessibility-mode.css` );
+		await loadCSS( `${window.hlx.codeBasePath}/tools/plugins/accessibility-mode/accessibility-mode.css` );
 
 		if ( localStorage.getItem( 'hlx-a11y-mode-help' ) !== 'Disabled' ) {
 			const helpDialog = createDialog();
@@ -56,7 +56,7 @@ const initAccessibilityMode = async ( shouldActivateA11yMode ) => {
 			} );
 		}
 
-		await loadCSS( `${window.hlx.codeBasePath}/tools/sidekick/plugins/accessibility-mode/lib/sa11y.min.css` );
+		await loadCSS( `${window.hlx.codeBasePath}/tools/plugins/accessibility-mode/lib/sa11y.min.css` );
 		Lang.addI18n( Sa11yLangEn.strings );
 		const isAlreadyInitialized = initializedCounter > 0;
 

@@ -674,8 +674,17 @@ async function loadLazy( doc ) {
 		initQuickEdit( ...args );
 	};
 
+	let a11yModeActive = false;
+	const loadA11yMode = async () => {
+		// eslint-disable-next-line import/no-cycle
+		const { default: initA11y } = await import( '../tools/plugins/accessibility-mode/accessibility-mode.js' );
+		a11yModeActive = !a11yModeActive;
+		initA11y( a11yModeActive );
+	};
+
 	const addSidekickListeners = ( sk ) => {
 		sk.addEventListener( 'custom:quick-edit', loadQuickEdit );
+		sk.addEventListener( 'custom:accessibility-mode', loadA11yMode );
 	};
 
 	const sk = document.querySelector( 'aem-sidekick' );
