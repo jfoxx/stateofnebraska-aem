@@ -192,7 +192,7 @@
     "fields": [
       {
         "component": "select",
-        "name": "layout",
+        "name": "style",
         "label": "Column Layout",
         "description": "Custom desktop column widths (must total 12). Leave blank for equal-width columns.",
         "options": [
@@ -201,32 +201,32 @@
             "value": ""
           },
           {
-            "name": "1/3 + 2/3",
-            "value": "layout-4-8"
+            "name": "4/8",
+            "value": "layout-4/8"
           },
           {
-            "name": "2/3 + 1/3",
-            "value": "layout-8-4"
+            "name": "8/4",
+            "value": "layout-8/4"
           },
           {
-            "name": "1/2 + 1/2",
-            "value": "layout-6-6"
+            "name": "6/6",
+            "value": "layout-6/6"
           },
           {
-            "name": "1/4 + 3/4",
-            "value": "layout-3-9"
+            "name": "3/9",
+            "value": "layout-3/9"
           },
           {
-            "name": "3/4 + 1/4",
-            "value": "layout-9-3"
+            "name": "9/3",
+            "value": "layout-9/3"
           },
           {
-            "name": "1/3 + 1/3 + 1/3",
-            "value": "layout-4-4-4"
+            "name": "4/4/4",
+            "value": "layout-4/4/4"
           },
           {
-            "name": "1/4 + 1/2 + 1/4",
-            "value": "layout-3-6-3"
+            "name": "3/6/3",
+            "value": "layout-3/6/3"
           }
         ]
       }
