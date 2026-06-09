@@ -52,7 +52,8 @@
             "name": "h6",
             "value": "h6"
           }
-        ]
+        ],
+        "value": ""
       }
     ]
   },
@@ -91,7 +92,8 @@
             "name": "secondary",
             "value": "secondary"
           }
-        ]
+        ],
+        "value": ""
       }
     ]
   },
@@ -113,7 +115,8 @@
             "name": "Highlight",
             "value": "highlight"
           }
-        ]
+        ],
+        "value": ""
       }
     ]
   },
@@ -129,7 +132,8 @@
             "name": "Bordered",
             "value": "bordered"
           }
-        ]
+        ],
+        "value": ""
       }
     ]
   },
@@ -161,7 +165,8 @@
             "name": "Success",
             "value": "success"
           }
-        ]
+        ],
+        "value": ""
       },
       {
         "component": "boolean",
@@ -193,6 +198,7 @@
       {
         "component": "select",
         "name": "style",
+        "value": "",
         "label": "Column Layout",
         "description": "Custom desktop column widths (must total 12). Leave blank for equal-width columns.",
         "options": [
@@ -201,32 +207,32 @@
             "value": ""
           },
           {
-            "name": "4/8",
-            "value": "layout-4/8"
+            "name": "1/3 + 2/3",
+            "value": "layout-4-8"
           },
           {
-            "name": "8/4",
-            "value": "layout-8/4"
+            "name": "2/3 + 1/3",
+            "value": "layout-8-4"
           },
           {
-            "name": "6/6",
-            "value": "layout-6/6"
+            "name": "1/2 + 1/2",
+            "value": "layout-6-6"
           },
           {
-            "name": "3/9",
-            "value": "layout-3/9"
+            "name": "1/4 + 3/4",
+            "value": "layout-3-9"
           },
           {
-            "name": "9/3",
-            "value": "layout-9/3"
+            "name": "3/4 + 1/4",
+            "value": "layout-9-3"
           },
           {
-            "name": "4/4/4",
-            "value": "layout-4/4/4"
+            "name": "1/3 + 1/3 + 1/3",
+            "value": "layout-4-4-4"
           },
           {
-            "name": "3/6/3",
-            "value": "layout-3/6/3"
+            "name": "1/4 + 1/2 + 1/4",
+            "value": "layout-3-6-3"
           }
         ]
       }
@@ -252,7 +258,8 @@
             "name": "Right",
             "value": "right"
           }
-        ]
+        ],
+        "value": ""
       }
     ]
   },
@@ -5161,7 +5168,8 @@
             "name": "H4",
             "value": "h4"
           }
-        ]
+        ],
+        "value": ""
       },
       {
         "component": "number",
@@ -5187,7 +5195,8 @@
             "name": "Blue (with icon)",
             "value": "blue"
           }
-        ]
+        ],
+        "value": ""
       }
     ]
   },
@@ -5225,7 +5234,8 @@
             "name": "Dynamic Collection",
             "value": "dynamic-collection"
           }
-        ]
+        ],
+        "value": ""
       },
       {
         "component": "boolean",
@@ -5254,7 +5264,8 @@
             "name": "Title",
             "value": "title"
           }
-        ]
+        ],
+        "value": ""
       },
       {
         "component": "text",
@@ -5288,7 +5299,8 @@
             "name": "Scrollable",
             "value": "scrollable"
           }
-        ]
+        ],
+        "value": ""
       }
     ]
   }

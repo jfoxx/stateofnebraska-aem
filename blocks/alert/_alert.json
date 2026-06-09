@@ -42,7 +42,8 @@
               "name": "Success",
               "value": "success"
             }
-          ]
+          ],
+          "value": ""
         },
         {
           "component": "boolean",

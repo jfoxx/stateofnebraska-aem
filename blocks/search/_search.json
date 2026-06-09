@@ -46,7 +46,8 @@
               "name": "Dynamic Collection",
               "value": "dynamic-collection"
             }
-          ]
+          ],
+          "value": ""
         },
         {
           "component": "boolean",
@@ -75,7 +76,8 @@
               "name": "Title",
               "value": "title"
             }
-          ]
+          ],
+          "value": ""
         },
         {
           "component": "text",

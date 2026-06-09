@@ -20,7 +20,8 @@
       "fields": [
         {
           "component": "select",
-          "name": "layout",
+          "name": "style",
+          "value": "",
           "label": "Column Layout",
           "description": "Custom desktop column widths (must total 12). Leave blank for equal-width columns.",
           "options": [
